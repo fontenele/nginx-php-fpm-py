@@ -4,7 +4,7 @@ LABEL maintainer="Guilherme Fontenele <guilherme@fontenele.net>"
 
 RUN echo 'deb http://deb.debian.org/debian unstable main contrib non-free' > /etc/apt/sources.list \
     && DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
-    apt-utils curl net-tools wget git vim nginx supervisor python3 sqlite3 \
+    apt-utils unzip tree curl net-tools wget git vim nginx supervisor python3 sqlite3 \
     php7.3-fpm php7.3-pgsql php7.3-sqlite3 php7.3-zip php7.3-curl \
     php7.3-gd php7.3-bz2 php7.3-json php7.3-mbstring php7.3-xml php-ssh2 \
     php-redis npm \
@@ -18,9 +18,12 @@ RUN openssl req -batch -nodes -newkey rsa:2048 -keyout /etc/ssl/private/server.k
 RUN echo "cgi.fix_pathinfo = 0;" >> /etc/php/7.3/fpm/php.ini \
     && sed -i 's/post_max_size = 8M/post_max_size = 50M/g' /etc/php/7.3/fpm/php.ini \
     && sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 50M/g' /etc/php/7.3/fpm/php.ini \
-    && echo "daemon off;" >> /etc/nginx/nginx.conf
+    && echo "daemon off;" >> /etc/nginx/nginx.conf \
+    && sed -i 's/worker_connections 768/worker_connections 4096/g' /etc/php/nginx/nginx.conf \
+    && sed -i 's|access_log /var/log/nginx/access.log|access_log stdout|g' /etc/php/nginx/nginx.conf \
+    && sed -i 's|error_log /var/log/nginx/error.log|error_log stderr|g' /etc/php/nginx/nginx.conf
 
-RUN service php7.3-fpm start && service nginx start \
+RUN service php7.3-fpm start \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && composer global require hirak/prestissimo \
     && npm i -g yarn
