@@ -18,10 +18,9 @@ RUN openssl req -batch -nodes -newkey rsa:2048 -keyout /etc/ssl/private/server.k
 RUN echo "cgi.fix_pathinfo = 0;" >> /etc/php/7.3/fpm/php.ini \
     && sed -i 's/post_max_size = 8M/post_max_size = 50M/g' /etc/php/7.3/fpm/php.ini \
     && sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 50M/g' /etc/php/7.3/fpm/php.ini \
-    && echo "daemon off;" >> /etc/nginx/nginx.conf \
     && sed -i 's/worker_connections 768/worker_connections 4096/g' /etc/nginx/nginx.conf \
-    && sed -i 's|access_log /var/log/nginx/access.log|access_log stdout|g' /etc/nginx/nginx.conf \
-    && sed -i 's|error_log /var/log/nginx/error.log|error_log stderr|g' /etc/nginx/nginx.conf
+    && sed -i 's|access_log /var/log/nginx/access.log|access_log /dev/stdout|g' /etc/nginx/nginx.conf \
+    && sed -i 's|error_log /var/log/nginx/error.log|error_log /dev/stderr|g' /etc/nginx/nginx.conf
 
 RUN service php7.3-fpm start \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
